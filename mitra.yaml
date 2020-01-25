@@ -6,8 +6,160 @@ info:
 servers:
   - url: 'https://Mitra.irisa.api'
     description: Mitra API servers
-tags: {}
+tags:
+  - name: Base
+    description: |-
+      This tag used for base prototypes. Not for any path.
 
 paths: {}
 
-components: {}
+components:
+  schemas:
+    AbstractResource:
+      type: object
+      x-tags:
+        - Base
+      title: Abstract Resource
+      description: |-
+        Contains `id` and `version` for stored *resources*.
+
+        * All stored resources in mitra has this two fields in their structure.
+        * This schema does not use directly in paths but other schemas extend it.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier which represents in UUID-4 format.
+        version:
+          type: integer
+          description: Resource row version in database.
+          minimum: 0
+      required:
+        - id
+        - version
+
+
+    StatusBased:
+      type: object
+      title: Status based resources
+      description: |-
+        This prototype used in resources that have a lifecycle.
+        Each step in their lifecycle represented by a string which called `status`.
+        The `status` will represents as **SCREAMING_SNAKE_CASE**.
+      x-tags:
+        - Base
+      properties:
+        status:
+          type: string
+          pattern: '^[A-Z](?:[A-Z0-9_])+[A-Z0-9]$'
+          minLength: 3
+          description: Resource's status. status will presents as SCREAMING_SNAKE_CASE.
+
+
+    Ranged:
+      type: object
+      title: Ranged resources
+      description: |-
+        This prototype used in ranged resource.
+        In most cases this prototype used in time ranging for availibility time of that resource.
+      x-tags:
+        - Base
+      properties:
+        rangeStart:
+          type: integer
+          format: int64
+          description: determines first value of range. In case of time it reperesents as unix epoch.
+        rangeEnd:
+          type: integer
+          format: int64
+          description: determines last value of range. In case of time it reperesents as unix epoch.
+
+
+    Named:
+      type: object
+      title: Named resources
+      description: |-
+        This prototype will use for named resource.
+        It contains `name` field which follows special pattern.
+      x-tags:
+        - Base
+      properties:
+        name:
+          type: string
+          pattern: '^[A-Za-z0-9](?:-?[A-Za-z0-9]){2,}$'
+          description: Resource's unique name. This name is unique in its namespace. This field is case-insensitive.
+      required:
+        - name
+
+
+    Page:
+      type: object
+      title: Page metadata
+      description: |-
+        This prototype defines a page of results. Often used for responses which returns as collection.
+
+        For using this prototype you need to create a single object with `allOf` property.
+
+        First member in `allOf` array should points to this prototype and
+        second member should be an object with field `content` with type `array`.
+        Here we can define page content type as value for key `items`.
+
+        For example:
+        ``` yaml
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/Page'
+            - type: object
+              protperties:
+                content:
+                  type: array
+                  items:
+                    $ref: '' # points to another prototype
+        ```
+
+      properties:
+        content:
+          type: array
+          items:
+            type: object
+        pageable:
+          type: object
+          properties:
+            sort:
+              type: object
+              properties:
+                sorted:
+                  type: boolean
+                unsorted:
+                  type: boolean
+            pageSize:
+              type: number
+            pageNumber:
+              type: number
+            offset:
+              type: number
+            paged:
+              type: boolean
+            unpaged:
+              type: boolean
+        last:
+          type: boolean
+        totalElements:
+          type: number
+        totalPages:
+          type: number
+        first:
+          type: boolean
+        sort:
+          type: object
+          properties:
+            sorted:
+              type: boolean
+            unsorted:
+              type: boolean
+        numberOfElements:
+          type: number
+        size:
+          type: number
+        number:
+          type: number
