@@ -1,0 +1,13 @@
+openapi: 3.0.2
+info:
+  title: Mitra Security API
+  version: '1.0'
+  description: Mitra is a user provider for multi tenant applications.
+servers:
+  - url: 'https://Mitra.irisa.api'
+    description: Mitra API servers
+tags: {}
+
+paths: {}
+
+components: {}
